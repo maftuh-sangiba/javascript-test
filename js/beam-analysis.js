@@ -8,8 +8,8 @@
  * @param {String} name         Material name
  * @param {Object} properties   Material properties {EI : 0, GA : 0, ....}
  */
-function Material (name, properties) {
-    this.name       = name;
+function Material(name, properties) {
+    this.name = name;
     this.properties = properties;
 }
 
@@ -19,17 +19,17 @@ function Material (name, properties) {
  * @param {Number} secondarySpan        Beam secondary span length
  * @param {Material} material           Beam material object
  */
-function Beam (primarySpan, secondarySpan, material) {
-    this.primarySpan    = primarySpan;
-    this.secondarySpan  = secondarySpan;
-    this.material       = material;
+function Beam(primarySpan, secondarySpan, material) {
+    this.primarySpan = primarySpan;
+    this.secondarySpan = secondarySpan;
+    this.material = material;
 }
 
 /** ============================ Beam Analysis Class ============================ */
 
-function BeamAnalysis () {
+function BeamAnalysis() {
     this.options = {
-        condition : 'simply-supported'
+        condition: 'simply-supported'
     };
 
     this.analyzer = {
@@ -185,6 +185,14 @@ BeamAnalysis.analyzer.twoSpanUnequal = function (beam, load) {
 
 BeamAnalysis.analyzer.twoSpanUnequal.prototype = {
     getDeflectionEquation: function (beam, load) {
+        const { primarySpan, secondarySpan } = beam;
+        const { EI, j2 } = beam.material.properties;
+
+        const totalLength = primarySpan + secondarySpan;
+        const M1 = -((load * Math.pow(secondarySpan, 3)) + (load * Math.pow(primarySpan, 3))) / (8 * (primarySpan + secondarySpan));
+
+        console.log([primarySpan, secondarySpan, EI, j2, load, totalLength, M1]);
+
         return function (x) {
             return {
                 x: x,
