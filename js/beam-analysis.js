@@ -137,10 +137,6 @@ BeamAnalysis.analyzer.simplySupported.prototype = {
         const xValues = [];
         const vValues = [];
 
-        function parseNilai(num) {
-            return parseFloat((num).toFixed(1));
-        }
-
         for (let i = 0; i <= primarySpan; i += step) {
             const x = parseFloat(i.toFixed(1));
             xValues.push(x);
