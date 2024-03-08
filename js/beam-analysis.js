@@ -109,29 +109,20 @@ BeamAnalysis.analyzer.simplySupported = function (beam, load) {
 
 BeamAnalysis.analyzer.simplySupported.prototype = {
     getDeflectionEquation: function (beam, load) {
-        var w = load;
-        var L = beam.primarySpan;
-        var EI = beam.material.properties.EI;
-        var j2 = beam.material.properties.j2;
+        const { primarySpan } = beam;
+        const { EI, j2 } = beam.material.properties;
 
-        function parseNilai(num) {
-            return parseFloat((num).toFixed(1));
-        }
-
-        const step = parseNilai((L / 10));
-
+        const step = primarySpan / 10;
         const xValues = [];
-
-        for (let i = 0; i <= L; i += step) {
-            xValues.push(parseNilai(i));
-        }
-
         const vValues = [];
 
-        xValues.forEach((x) => {
-            const V = -((w * x) / (24 * EI)) * (Math.pow(L, 3) - 2 * L * Math.pow(x, 2) + Math.pow(x, 3)) * j2 * 1000;
-            vValues.push(parseFloat(V * 1000000000));
-        });
+        for (let i = 0; i <= primarySpan; i += step) {
+            const x = parseFloat(i.toFixed(1));
+            xValues.push(x);
+
+            const V = -((load * x) / (24 * EI)) * (Math.pow(primarySpan, 3) - 2 * primarySpan * Math.pow(x, 2) + Math.pow(x, 3)) * j2 * 1000;
+            vValues.push(parseFloat((V * 1000000000).toFixed(1)));
+        }
 
         return {
             x: xValues,
@@ -140,27 +131,23 @@ BeamAnalysis.analyzer.simplySupported.prototype = {
     },
 
     getBendingMomentEquation: function (beam, load) {
-        var w = load;
-        var L = beam.primarySpan;
+        const { primarySpan } = beam;
+
+        const step = primarySpan / 10;
+        const xValues = [];
+        const vValues = [];
 
         function parseNilai(num) {
             return parseFloat((num).toFixed(1));
         }
 
-        const step = parseNilai((L / 10));
+        for (let i = 0; i <= primarySpan; i += step) {
+            const x = parseFloat(i.toFixed(1));
+            xValues.push(x);
 
-        const xValues = [];
-
-        for (let i = 0; i <= L; i += step) {
-            xValues.push(parseNilai(i));
+            const V = (load * x / 2) * ((primarySpan - x)) * -1;
+            vValues.push(parseFloat(V.toFixed(1)));
         }
-
-        const vValues = [];
-
-        xValues.forEach((x) => {
-            const V = ((w * x / 2) * ((L - x)) * -1);
-            vValues.push(parseNilai(V));
-        });
 
         return {
             x: xValues,
@@ -169,28 +156,19 @@ BeamAnalysis.analyzer.simplySupported.prototype = {
     },
 
     getShearForceEquation: function (beam, load) {
-        var w = load;
-        var L = beam.primarySpan;
+        const { primarySpan } = beam;
 
-        function parseNilai(num) {
-            return parseFloat((num).toFixed(1));
-        }
-
-        const step = parseNilai((L / 10));
-
+        const step = primarySpan / 10;
         const xValues = [];
-
-        for (let i = 0; i <= L; i += step) {
-            xValues.push(parseNilai(i));
-        }
-
         const vValues = [];
 
-        xValues.forEach((x) => {
-            const V = w * ((L / 2) - x);
-            vValues.push(parseNilai(V));
-        });
+        for (let i = 0; i <= primarySpan; i += step) {
+            const x = parseFloat(i.toFixed(1));
+            xValues.push(x);
 
+            const V = load * ((primarySpan / 2) - x);
+            vValues.push(parseFloat(V.toFixed(1)));
+        }
         return {
             x: xValues,
             y: vValues,
