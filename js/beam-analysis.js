@@ -165,6 +165,7 @@ BeamAnalysis.analyzer.simplySupported.prototype = {
             const V = load * ((primarySpan / 2) - x);
             vValues.push(parseFloat(V.toFixed(1)));
         }
+
         return {
             x: xValues,
             y: vValues,
@@ -185,14 +186,6 @@ BeamAnalysis.analyzer.twoSpanUnequal = function (beam, load) {
 
 BeamAnalysis.analyzer.twoSpanUnequal.prototype = {
     getDeflectionEquation: function (beam, load) {
-        const { primarySpan, secondarySpan } = beam;
-        const { EI, j2 } = beam.material.properties;
-
-        const totalLength = primarySpan + secondarySpan;
-        const M1 = -((load * Math.pow(secondarySpan, 3)) + (load * Math.pow(primarySpan, 3))) / (8 * (primarySpan + secondarySpan));
-
-        console.log([primarySpan, secondarySpan, EI, j2, load, totalLength, M1]);
-
         return function (x) {
             return {
                 x: x,
@@ -211,11 +204,85 @@ BeamAnalysis.analyzer.twoSpanUnequal.prototype = {
     },
 
     getShearForceEquation: function (beam, load) {
-        return function (x) {
-            return {
-                x: x,
-                y: null
-            };
+        const { primarySpan, secondarySpan } = beam;
+        const { EI, j2 } = beam.material.properties;
+
+        const totalLength = primarySpan + secondarySpan;
+        const M1 = -((load * Math.pow(secondarySpan, 3)) + (load * Math.pow(primarySpan, 3))) / (8 * (primarySpan + secondarySpan));
+        const R1 = (M1 / primarySpan) + ((load * primarySpan) / 2);
+        const R3 = (M1 / secondarySpan) + ((load * secondarySpan) / 2);
+        const R2 = (load * primarySpan) + (load * secondarySpan) - R1 - R3;
+        const results = []
+        const resultsV = []
+
+        let i = 0
+        let isCounting = true
+
+        while (isCounting) {
+            let x = 0
+            const previousX = results[i - 1] || 0
+            const previousXtwice = results[i - 2]
+
+            if (i == 0) {
+                x = 0
+            } else if (previousX === 0) {
+                x = previousX + (totalLength / 10);
+            } else if (Math.abs(previousX - primarySpan) <= (totalLength / 10) && previousX - primarySpan < 0) {
+                x = primarySpan;
+            } else if (previousX - primarySpan === 0 && Math.abs(previousXtwice - primarySpan) <= (totalLength / 10) && previousXtwice !== previousX) {
+                x = primarySpan;
+            } else if (Math.abs(previousX - totalLength) < (totalLength / 10)) {
+                x = totalLength;
+            } else {
+                x = previousX + (totalLength / 10);
+            }
+
+            results.push(x);
+
+            const currentKey = x
+            const previousKey = results[i - 1] || 0
+            const nextKey = results[i + 1] || 0
+            const previousTwoKey = results[i - 2] || 0
+
+            if (i > 0) {
+                resultsV[i - 1] = countV({ currentKey: previousKey, previousKey: previousTwoKey, nextKey: currentKey })
+            }
+
+            isCounting = x < totalLength
+
+            if (!isCounting) {
+                resultsV[i] = countV({ currentKey, previousKey, nextKey })
+            }
+
+            i++
         }
+
+        function countV({ currentKey, previousKey, nextKey }) {
+
+            if (currentKey === 0) {
+                return rounded(R1);
+            } else if (currentKey === totalLength) {
+                return rounded((R1 + R2) - (load * totalLength));
+            } else if (currentKey === primarySpan && previousKey - primarySpan < 0) {
+                return rounded(R1 - (load * primarySpan));
+            } else if (currentKey === primarySpan && nextKey - primarySpan > 0) {
+                return rounded((R1 + R2) - (load * primarySpan));
+            } else if (currentKey < primarySpan) {
+                return rounded(R1 - (load * currentKey));
+            } else {
+                return rounded((R1 + R2) - (load * currentKey));
+            }
+        }
+
+        function rounded(x) {
+            return Number(x).toFixed(2)
+        }
+
+        console.log({ results, resultsV });
+
+        return {
+            x: results,
+            y: resultsV
+        };
     }
 };
