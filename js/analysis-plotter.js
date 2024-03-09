@@ -18,12 +18,15 @@ AnalysisPlotter.prototype = {
 
         switch (this.container) {
             case 'deflection_plot':
+                this.destroyChart(this.container);
                 this.drawChart(data.equation.x, data.equation.y, 'Span (m)', 'Deflection (kN)', 'monotone');
                 break;
             case 'shear_force_plot':
+                this.destroyChart(this.container);
                 this.drawChart(data.equation.x, data.equation.y, 'Span (m)', 'Shear Force (kN)',);
                 break;
             case 'bending_moment_plot':
+                this.destroyChart(this.container);
                 this.drawChart(data.equation.x, data.equation.y, 'Span (m)', 'Bending Moment (kNm)', 'monotone');
                 break;
             default:
@@ -70,5 +73,12 @@ AnalysisPlotter.prototype = {
                 maintainAspectRatio: false
             }
         });
+    },
+
+    destroyChart(chartId) {
+        var chartInstance = Chart.getChart(chartId);
+        if (chartInstance) {
+            chartInstance.destroy();
+        }
     }
 };
