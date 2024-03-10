@@ -60,13 +60,20 @@ AnalysisPlotter.prototype = {
                         title: {
                             display: true,
                             text: xAxisLabel
-                        }
+                        },
+                        ticks: {
+                            callback: function (value) {
+                                return value;
+                            },
+                        },
+                        type: "linear",
                     },
                     y: {
                         title: {
                             display: true,
                             text: yAxisLabel
-                        }
+                        },
+                        type: "linear",
                     }
                 },
                 responsive: true,

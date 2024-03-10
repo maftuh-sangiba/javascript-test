@@ -368,9 +368,9 @@ BeamAnalysis.analyzer.twoSpanUnequal.prototype = {
                 x = previousX + (totalLength / 10);
             }
 
-            results.push(x);
+            results.push(parseFloat(x.toFixed(1)));
 
-            const currentKey = x
+            const currentKey = parseFloat(x.toFixed(1))
             const previousKey = results[i - 1] || 0
             const nextKey = results[i + 1] || 0
             const previousTwoKey = results[i - 2] || 0
@@ -391,18 +391,22 @@ BeamAnalysis.analyzer.twoSpanUnequal.prototype = {
         function countV({ currentKey, previousKey, nextKey }) {
 
             if (currentKey === 0) {
-                return Math.round(R1);
+                return parseNum(R1);
             } else if (currentKey === totalLength) {
-                return Math.round((R1 + R2) - (load * totalLength));
+                return parseNum((R1 + R2) - (load * totalLength));
             } else if (currentKey === primarySpan && previousKey - primarySpan < 0) {
-                return Math.round(R1 - (load * primarySpan));
+                return parseNum(R1 - (load * primarySpan));
             } else if (currentKey === primarySpan && nextKey - primarySpan > 0) {
-                return Math.round((R1 + R2) - (load * primarySpan));
+                return parseNum((R1 + R2) - (load * primarySpan));
             } else if (currentKey < primarySpan) {
-                return Math.round(R1 - (load * currentKey));
+                return parseNum(R1 - (load * currentKey));
             } else {
-                return Math.round((R1 + R2) - (load * currentKey));
+                return parseNum((R1 + R2) - (load * currentKey));
             }
+        }
+
+        function parseNum(num) { 
+            return parseFloat(num.toFixed(2));
         }
 
         return {
