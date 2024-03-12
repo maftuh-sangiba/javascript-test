@@ -329,9 +329,22 @@ BeamAnalysis.analyzer.twoSpanUnequal.prototype = {
             }
         }
 
+        const finalX = []
+        const finalY = []
+
+        fixedNumber(results, finalX, 3);
+        fixedNumber(resultsV, finalY, 2);
+
+        function fixedNumber(baseArray, finalArray, fix) {     
+            baseArray.forEach(function (val) {
+                let finalVal = val.toFixed(fix);
+                finalArray.push(finalVal)
+            })
+        }
+
         return {
-            x: results,
-            y: resultsV
+            x: finalX,
+            y: finalY
         };
     },
 
