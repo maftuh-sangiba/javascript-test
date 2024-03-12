@@ -23,7 +23,7 @@ AnalysisPlotter.prototype = {
                 break;
             case 'shear_force_plot':
                 this.destroyChart(this.container);
-                this.drawChart(data.equation.x, data.equation.y, 'Span (m)', 'Shear Force (kN)',);
+                this.drawChart(data.equation.x, data.equation.y, 'Span (m)', 'Shear Force (kN)');
                 break;
             case 'bending_moment_plot':
                 this.destroyChart(this.container);
@@ -34,19 +34,34 @@ AnalysisPlotter.prototype = {
         }
     },
 
-    drawChart(x, y, xAxisLabel, yAxisLabel, interpolationMode) {
+    drawChart(x, y, xAxisLabel, yAxisLabel, interpolationMode, container) {
         const ctx = document.getElementById(this.container).getContext('2d');
+        const skipped = (ctx, value) => ctx.p0.skip || ctx.p1.skip ? value : undefined;
+        const down = (ctx, value) => ctx.p0.parsed.y > ctx.p1.parsed.y ? value : undefined;
+        
+        let segmentOption;
+        let borderColor = 'red';
+
+        if (this.container === 'shear_force_plot') {
+            segmentOption = {
+                borderColor: ctx => skipped(ctx, 'rgba(0, 0, 0, 0)') || down(ctx, 'red'),
+            }
+
+            borderColor = 'rgba(0, 0, 0, 0)'
+        }
+
         new Chart(ctx, {
             type: 'line',
             data: {
                 labels: x,
                 datasets: [{
                     data: y,
-                    borderColor: 'red',
+                    borderColor: borderColor,
                     borderWidth: 1,
                     fill: true,
                     pointRadius: 0,
-                    cubicInterpolationMode: interpolationMode || 'default'
+                    cubicInterpolationMode: interpolationMode || 'default',
+                    segment: segmentOption,
                 }]
             },
             options: {
@@ -61,11 +76,6 @@ AnalysisPlotter.prototype = {
                             display: true,
                             text: xAxisLabel
                         },
-                        ticks: {
-                            callback: function (value) {
-                                return value;
-                            },
-                        },
                         type: "linear",
                     },
                     y: {
@@ -74,6 +84,7 @@ AnalysisPlotter.prototype = {
                             text: yAxisLabel
                         },
                         type: "linear",
+                        grace: "10%"
                     }
                 },
                 responsive: true,
