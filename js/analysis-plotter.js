@@ -36,11 +36,13 @@ AnalysisPlotter.prototype = {
 
     drawChart(x, y, xAxisLabel, yAxisLabel, interpolationMode, container) {
         const ctx = document.getElementById(this.container).getContext('2d');
+        const condition = document.getElementById("condition").value;
         const skipped = (ctx, value) => ctx.p0.skip || ctx.p1.skip ? value : undefined;
         const down = (ctx, value) => ctx.p0.parsed.y > ctx.p1.parsed.y ? value : undefined;
         
         let segmentOption;
         let borderColor = 'red';
+        let backgroundColor;
 
         if (this.container === 'shear_force_plot') {
             segmentOption = {
@@ -50,6 +52,10 @@ AnalysisPlotter.prototype = {
             borderColor = 'rgba(0, 0, 0, 0)'
         }
 
+        if (this.container === 'deflection_plot' && condition === "two-span-unequal") {
+            backgroundColor = 'rgba(0, 0, 0, 0)';
+        }
+
         new Chart(ctx, {
             type: 'line',
             data: {
@@ -57,11 +63,12 @@ AnalysisPlotter.prototype = {
                 datasets: [{
                     data: y,
                     borderColor: borderColor,
-                    borderWidth: 1,
+                    borderWidth: 2,
                     fill: true,
                     pointRadius: 0,
                     cubicInterpolationMode: interpolationMode || 'default',
                     segment: segmentOption,
+                    backgroundColor: backgroundColor,
                 }]
             },
             options: {
